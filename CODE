@@ -1,0 +1,103 @@
+import pandas as pd
+import numpy as np
+from datetime import datetime
+
+# --- 1. Simulate a Raw Dataset ---
+# In a real-world scenario, you would load your data from a CSV or other file.
+# df = pd.read_csv('your_raw_data.csv')
+
+# Creating a sample DataFrame with common data issues
+data = {
+    'PatientId': [1, 2, 2, 3, 4, 5, 6, 7],
+    'AppointmentID': [1001, 1002, 1002, 1003, 1004, 1005, 1006, 1007],
+    'Gender': ['M', 'F', 'f', np.nan, 'M', 'F', 'M', 'F'],
+    'ScheduledDay': ['2016-04-29T18:38:08Z', '2016-04-29T18:38:08Z', '2016-04-29T18:38:08Z', '29-04-2016', '01-05-2016', '02-05-2016', '03-05-2016', '03-05-2016'],
+    'AppointmentDay': ['2016-04-29', '2016-04-29', '2016-04-29', '2016-04-29', '2016-05-01', '2016-05-02', '2016-05-03', '2016-05-03'],
+    'Age': [56.0, 62.0, 62.0, np.nan, 21.5, 45.0, -1, 105],
+    'Neighbourhood': ['JARDIM DA PENHA', 'JARDIM DA PENHA', 'JARDIM DA PENHA', 'SANTA MARTHA', 'SANTA MARTHA', 'JARDIM CAMBURI', 'JARDIM CAMBURI', 'JARDIM CAMBURI'],
+    'No-show': ['No', 'Yes', 'Yes', 'No', 'No', 'Yes', 'No', 'Yes'],
+}
+df = pd.DataFrame(data)
+
+print("--- Raw Dataset Head ---")
+print(df.head())
+print("\n--- Raw Dataset Info ---")
+print(df.info())
+print("-" * 30 + "\n")
+
+
+# --- 2. Data Cleaning and Preprocessing Steps ---
+
+# 2.1. Rename columns for consistency (lowercase, no special characters)
+# We will use .str.replace() and .str.lower() for this
+df.columns = df.columns.str.lower().str.replace('-', '_')
+
+print("--- Renamed Columns ---")
+print(df.columns)
+print("-" * 30 + "\n")
+
+
+# 2.2. Handle Duplicates
+# The AppointmentID and PatientID combination can be used to identify duplicates
+df.drop_duplicates(subset=['patientid', 'appointmentid'], inplace=True)
+print("--- After Removing Duplicates ---")
+print(f"Number of rows after removal: {len(df)}")
+print("-" * 30 + "\n")
+
+
+# 2.3. Handle Missing Values
+# Fill missing 'gender' values with the mode (most frequent value)
+df['gender'] = df['gender'].fillna(df['gender'].mode()[0])
+# Fill missing 'age' values with the median to be robust against outliers
+df['age'] = df['age'].fillna(df['age'].median())
+
+# Also, correct invalid data, such as negative ages
+df = df[df['age'] >= 0]
+# Check for unusually high ages and handle if necessary (e.g., cap at a realistic max age)
+df['age'] = df['age'].apply(lambda x: min(x, 100))
+
+print("--- After Handling Missing and Invalid Values ---")
+print(df.isnull().sum())
+print("-" * 30 + "\n")
+
+
+# 2.4. Standardize Text and Correct Data Types
+# Standardize 'gender' to a consistent case
+df['gender'] = df['gender'].str.upper()
+
+# Convert 'age' to an integer type
+df['age'] = df['age'].astype(int)
+
+# Convert date columns to datetime objects
+# Define a helper function to parse dates with error handling
+def parse_date(date_str):
+    try:
+        # Attempt to parse with the first format
+        return datetime.fromisoformat(date_str.replace('Z', '+00:00')).date()
+    except ValueError:
+        try:
+            # Attempt to parse with the second format
+            return datetime.strptime(date_str, '%d-%m-%Y').date()
+        except ValueError:
+            # Return NaT for unparseable dates
+            return pd.NaT
+
+df['scheduledday'] = df['scheduledday'].apply(parse_date)
+df['appointmentday'] = pd.to_datetime(df['appointmentday']).dt.date
+
+
+# Convert 'no_show' to a binary column (1 for Yes, 0 for No)
+df['no_show'] = df['no_show'].apply(lambda x: 1 if x == 'Yes' else 0)
+
+print("--- Final Data Types ---")
+print(df.info())
+print("-" * 30 + "\n")
+
+
+# 2.5. Final Check on the Cleaned Data
+print("--- Cleaned Dataset Head ---")
+print(df.head())
+
+# --- 3. Save the Cleaned Dataset ---
+# In a real-world scenario, you would save the cleaned data to a new file.
+# df.to_csv('cleaned_data.csv', index=False)
