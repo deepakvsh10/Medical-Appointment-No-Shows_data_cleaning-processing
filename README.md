@@ -1,23 +1,38 @@
-# Medical-Appointment-No-Shows_data_cleaning-processing
-📊 Data Cleaning and Preprocessing Project
-This repository contains a simple Python script to demonstrate a typical data cleaning and preprocessing workflow using the Pandas library. The process is crucial for preparing raw data for subsequent analysis, visualization, or machine learning tasks.
+📅 Medical Appointment No Shows - Data Cleaning Project
+This repository showcases a practical data cleaning and preprocessing project using a real-world dataset. The project's goal is to transform a raw dataset into a clean, well-structured format, ready for exploratory data analysis, visualization, and machine learning model building.
 
 📂 Dataset
-The script uses a simulated dataset inspired by the "Medical Appointment No Shows" data from Kaggle. The raw data includes common issues such as:
+The dataset used is the "Medical Appointment No Shows" dataset, originally from Kaggle. The raw data contains information on over 110,000 medical appointments in Brazil. The data includes patient characteristics such as age, gender, and neighborhood, as well as details about the appointment, such as the scheduled and appointment dates.
 
-Missing values (NaN)
+🧹 Data Issues Addressed
+The raw dataset, like many real-world datasets, contains several issues that need to be addressed before analysis:
 
-Duplicate rows
+Inconsistent Column Names: Column names like No-show, Hipertension, and Handcap contain hyphens, mixed casing, and misspellings, which can be challenging to work with in code.
 
-Inconsistent text formatting
+Invalid Data: The Age column contains at least one invalid value (e.g., age of -1).
 
-Inconsistent date formats
+Incorrect Data Types: The PatientId column is loaded as a float, and date columns are stored as strings with unnecessary time and timezone information.
 
-Incorrect data types (e.g., age as a float, negative age)
+Categorical Encoding: The No-show column contains 'Yes' and 'No' values, which are not in a numerical format suitable for most machine learning models.
 
-Poorly named columns (e.g., No-show with a hyphen)
+🚀 Data Cleaning and Preprocessing Workflow
+The data_cleaning.py script systematically addresses the issues mentioned above:
 
-🚀 How to Run the Script
+Load Data: The script first attempts to load the dataset directly from its public Kaggle URL.
+
+Rename Columns: Column names are standardized to be in snake_case (e.g., No-show becomes no_show), and misspellings like Hipertension and Handcap are corrected.
+
+Handle Invalid Data: Rows with an invalid Age value (less than or equal to zero) are removed from the dataset to ensure data integrity.
+
+Correct Data Types:
+
+The scheduled_day and appointment_day columns are converted from strings to proper datetime objects, and the time components are removed.
+
+The patient_id column is converted to an integer (int64) to handle the large numerical IDs correctly.
+
+Standardize Categorical Data: The no_show column is transformed from Yes/No to a binary numerical representation (1/0), making it ready for machine learning tasks.
+
+💻 How to Run the Script
 Prerequisites: Ensure you have Python and the Pandas library installed. You can install Pandas using pip:
 
 pip install pandas
@@ -26,34 +41,6 @@ Execute the Script: Run the data_cleaning.py file from your terminal:
 
 python data_cleaning.py
 
-The script will print the state of the data at various stages of the cleaning process, showing the raw data, and then the final, clean output.
+The script will print the head of the raw dataset, followed by its final cleaned state, demonstrating the transformation process.
 
-🧹 Data Cleaning Steps Performed
-The data_cleaning.py script follows a structured approach to clean the dataset:
-
-Column Renaming: Renamed columns to a uniform, clean format (e.g., no-show became no_show).
-
-Duplicate Removal: Identified and removed duplicate rows based on the patient and appointment IDs.
-
-Missing Value Handling:
-
-Missing gender values were filled with the most common gender (M or F).
-
-Missing age values were filled with the median age.
-
-Data Validation: Handled invalid data points, such as a negative age, by filtering them out or correcting them.
-
-Data Type Conversion:
-
-Converted age from a float to an integer.
-
-Converted date columns from strings to proper datetime objects.
-
-Data Standardization:
-
-Standardized the gender column to all uppercase (M, F).
-
-Converted the no_show column from 'Yes'/'No' to a binary 1/0 format for easier analysis.
-
-📦 Output
-After running the script, the final output will be a cleaned DataFrame printed to the console. In a real-world application, you would typically save this cleaned data to a new CSV file, for example, cleaned_data.csv.
+This project can serve as a foundational piece in a data science portfolio, demonstrating core skills in data manipulation and preprocessing.
